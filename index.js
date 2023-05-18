@@ -32,7 +32,8 @@ async function run() {
     const toysCollection = client.db('carToys').collection('toys')
 
     app.get('/toys',async(req,res)=>{
-      const result = await toysCollection.find().toArray()
+      const cursor = toysCollection.find().limit(20)
+      const result =await cursor.toArray()
       res.send(result);
     })
 
@@ -43,6 +44,20 @@ async function run() {
       const query = {_id: new ObjectId(id)};
       const result= await toysCollection.find(query).toArray();
       res.send(result)
+    })
+
+    // Searcing Toys by Name 
+
+    app.get('/searceToyByName/:text',async(req,res)=>{
+      const searceText = req.params.text;
+      console.log(searceText);
+      if (searceText == "BusToys" || searceText == "TruckToys" || searceText == "BikeToys") {
+        const result = await toysCollection.find({subcategory:searceText}).toArray();
+        return res.send(result)
+        
+      }
+      const result = await toysCollection.find().toArray();
+      res.send(result);
     })
 
 
