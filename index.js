@@ -72,6 +72,13 @@ async function run() {
       res.send(result);
 
     })
+  
+    // get all booking Toys 
+
+    app.get('/getToy',async(req,res)=>{
+      const result = await bookingCollection.find().toArray()
+      res.send(result);
+    })
 
 
     // Send a ping to confirm a successful connection
