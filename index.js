@@ -33,7 +33,7 @@ async function run() {
     const bookingCollection = client.db('carToys').collection('booking')
 
     app.get('/toys',async(req,res)=>{
-      const cursor = toysCollection.find().limit(20)
+      const cursor = toysCollection.find()
       const result =await cursor.toArray()
       res.send(result);
     })
@@ -76,7 +76,8 @@ async function run() {
     // get all booking Toys 
 
     app.get('/getToy',async(req,res)=>{
-      const result = await bookingCollection.find().toArray()
+      const data = bookingCollection.find().limit(20)
+      const result = await data.toArray();
       res.send(result);
     })
 
