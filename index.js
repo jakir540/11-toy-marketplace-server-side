@@ -30,6 +30,7 @@ async function run() {
 
 
     const toysCollection = client.db('carToys').collection('toys')
+    const bookingCollection = client.db('carToys').collection('booking')
 
     app.get('/toys',async(req,res)=>{
       const cursor = toysCollection.find().limit(20)
@@ -59,7 +60,18 @@ async function run() {
       const result = await toysCollection.find().toArray();
       res.send(result);
     })
+// Add specific Toy 
 
+    app.post('/addToy',async(req,res)=>{
+      
+     const body = req.body;
+     if (!body) {
+      return res.status(404).send({message:"data not found"})
+     }
+      const result = await bookingCollection.insertOne(body);
+      res.send(result);
+
+    })
 
 
     // Send a ping to confirm a successful connection
