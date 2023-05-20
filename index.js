@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const app= express();
+const app = express();
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000
@@ -32,81 +32,135 @@ async function run() {
     const toysCollection = client.db('carToys').collection('toys')
     const bookingCollection = client.db('carToys').collection('booking')
 
-    app.get('/toys',async(req,res)=>{
-      const cursor = toysCollection.find()
-      const result =await cursor.toArray()
-      res.send(result);
-    })
-
-    //get the specific card by id 
-
-    app.get('/viewDetailsCard/:id',async(req,res)=>{
-      const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
-      const result= await toysCollection.find(query).toArray();
-      res.send(result)
-    })
-
-    // Searcing Toys by Name 
-
-    app.get('/searceToyByName/:text',async(req,res)=>{
-      const searceText = req.params.text;
-      console.log(searceText);
-      if (searceText == "BusToys" || searceText == "TruckToys" || searceText == "BikeToys") {
-        const result = await toysCollection.find({subcategory:searceText}).toArray();
-        return res.send(result)
-        
-      }
-      const result = await toysCollection.find().toArray();
-      res.send(result);
-    })
-// Add specific Toy 
-
-    app.post('/addToy',async(req,res)=>{
-      
-     const body = req.body;
-     if (!body) {
-      return res.status(404).send({message:"data not found"})
-     }
-      const result = await bookingCollection.insertOne(body);
-      res.send(result);
-
-    })
   
-    // get all booking Toys 
+const indexKey = {category:1}
+const indexOption = {name:"searceByName"};
 
-    app.get('/getToy',async(req,res)=>{
-      const data = bookingCollection.find().limit(20)
-      const result = await data.toArray();
-      res.send(result);
-    })
-
-    //Delete specific toy
-
-    app.delete('/bookings/:id',async(req,res)=>{
-      const id = req.params.id
-      const query = {_id : new ObjectId(id)}
-      const result = await bookingCollection.deleteOne(query);
-      res.send(result);
-    })
+const result  = await bookingCollection.createIndex(indexKey,indexOption)
 
 
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } finally {
-    // Ensures that the client will close when you finish/error
-    // await client.close();
-  }
+
+  app.get('/toySearceByName/:name',async(req,res)=>{
+      const searceText = req.params.name;
+      const result = await bookingCollection.find({category:{$regex: searceText, $options:"i"}}).toArray()
+      res.send(result)
+  })
+
+
+
+
+
+  app.get('/toys', async (req, res) => {
+    const cursor = toysCollection.find()
+    const result = await cursor.toArray()
+    res.send(result);
+  })
+
+  //get the specific card by id 
+
+  app.get('/viewDetailsCard/:id', async (req, res) => {
+    const id = req.params.id;
+    console.log(id);
+  
+    const query = {_id: new ObjectId(id) };
+    const result = await toysCollection.findOne(query);
+    console.log(result);
+    res.send(result)
+  })
+
+
+
+
+  // Searcing Toys by Name 
+
+  app.get('/searceToyByName/:text', async (req, res) => {
+    const searceText = req.params.text;
+    console.log(searceText);
+    if (searceText == "bus" || searceText == "Trucks" || searceText == "Bikes") {
+      const result = await toysCollection.find({ subcategory: searceText }).toArray();
+      return res.send(result)
+
+    }
+    const result = await toysCollection.find().toArray();
+    res.send(result);
+  })
+  // Add specific Toy 
+
+  app.post('/addToy', async (req, res) => {
+
+    const body = req.body;
+    if (!body) {
+      return res.status(404).send({ message: "data not found" })
+    }
+    const result = await bookingCollection.insertOne(body);
+    res.send(result);
+
+  })
+
+  // get all booking Toys 
+
+  app.get('/getToy', async (req, res) => {
+    const data = bookingCollection.find().limit(20)
+    const result = await data.toArray();
+    res.send(result);
+  })
+
+  app.get('/myToys/:name',async(req,res)=>{
+    const searceText = req.params.name;
+    console.log(searceText);
+    const cursor = bookingCollection.find({ name:searceText}).sort({price:1})
+    const result = await cursor.toArray();
+    res.send(result);
+  
+  })
+  
+
+  //Delete specific toy
+
+  app.delete('/bookingsToys/:id', async (req, res) => {
+    const id = req.params.id
+    const query = { _id: new ObjectId(id) }
+    const result = await bookingCollection.deleteOne(query);
+    res.send(result);
+  })
+
+  //update toy
+
+  app.put('/bookingToys/:id', async (req, res) => {
+    const id = req.params.id;
+    const filter = { _id: new ObjectId(id) }
+    const updateToy = req.body;
+    console.log(updateToy);
+    const updatedDoc = {
+      $set: {
+        price: updateToy.price,
+        quantity: updateToy.quantity,
+        description: updateToy.description
+      }
+    }
+
+    const result = await bookingCollection.updateOne(filter, updateToy)
+    res.send(result)
+
+  })
+
+
+  // Send a ping to confirm a successful connection
+  await client.db("admin").command({ ping: 1 });
+  console.log("Pinged your deployment. You successfully connected to MongoDB!");
+} finally {
+  // Ensures that the client will close when you finish/error
+  // await client.close();
+}
 }
 run().catch(console.dir);
 
 
 
-app.get('/',(req,res)=>{
-    res.send("volunteer server is running ontime ")
+app.get('/', (req, res) => {
+  res.send("volunteer server is running ontime ")
 })
 
-app.listen(port ,()=>{
-    console.log(`volunteer server is port Number ${port}`);
+app.listen(port, () => {
+  console.log(`volunteer server is port Number ${port}`);
 })
