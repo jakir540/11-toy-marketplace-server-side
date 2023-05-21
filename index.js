@@ -64,7 +64,11 @@ async function run() {
 
       const query = { _id: new ObjectId(id) };
       const result = await toysCollection.findOne(query);
-      console.log(result);
+     if (result) {
+      console.log("data found");
+     }else{
+      console.log("not found");
+     }
       res.send(result)
     })
 
@@ -99,7 +103,7 @@ async function run() {
     // get all booking Toys 
 
     app.get('/getToy', async (req, res) => {
-      const data = bookingCollection.find().limit(20)
+      const data = toysCollection.find().limit(20)
       const result = await data.toArray();
       res.send(result);
     })
@@ -117,27 +121,21 @@ async function run() {
 
 
 
-// // my toys sorting 
-//     app.get('/myToysSorting', async (req, res) => {
-//       const sort = req.query.sort;
-//       const search = req.query.search;
-//     console.log(search);
+    // my toys sorting 
+    app.get('/myToysSorting', async (req, res) => {
+      const sort = req.query.sort;
+      const options = {
+        sort: {
+          price: sort == 'asc' ? 1 : -1
+        }
+      };
 
-//       const query = {name:{$regex:search ,$options: 'i'}}
-//       const options = {
-//         sort:{
+      // const cursor = bookingCollection.find(query,options).collation({ locale: "en_US", numericOrdering: true })
+      const cursor = bookingCollection.find(options);
+      const result = await cursor.toArray();
+      res.send(result);
 
-          
-//           "price" : sort === 'asc' ? 1: -1
-//         }
-//       };
-
-//       // const cursor = bookingCollection.find(query,options).collation({ locale: "en_US", numericOrdering: true })
-//       const cursor = bookingCollection.find(query,options);
-//       const result = await cursor.toArray();
-//       res.send(result);
-
-//     })
+    })
 
 
     //Delete specific toy
