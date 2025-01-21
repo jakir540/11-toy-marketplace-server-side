@@ -39,6 +39,7 @@ async function run() {
     const toysCollection = client.db("carToys").collection("toys");
     const bookingCollection = client.db("carToys").collection("booking");
     const blogCollection = client.db("carToys").collection("blog");
+    const reviewCollection = client.db("carToys").collection("review");
 
     const indexKey = { category: 1 };
     const indexOption = { name: "searceByName" };
@@ -178,6 +179,22 @@ async function run() {
     // get blog Toy
     app.get("/blog", async (req, res) => {
       const data = blogCollection.find().limit(20);
+      const result = await data.toArray();
+      res.send(result);
+    });
+    // Add customer review
+    app.post("/customerReview", async (req, res) => {
+      const body = req.body;
+      console.log({ body });
+      if (!body) {
+        return res.status(404).send({ message: "blog not found" });
+      }
+      const result = await reviewCollection.insertOne(body);
+      res.send(result);
+    });
+    // get blog Toy
+    app.get("/customerReview", async (req, res) => {
+      const data = reviewCollection.find().limit(20);
       const result = await data.toArray();
       res.send(result);
     });
