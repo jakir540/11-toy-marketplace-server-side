@@ -175,6 +175,12 @@ async function run() {
       const result = await blogCollection.insertOne(body);
       res.send(result);
     });
+    // get blog Toy
+    app.get("/blog", async (req, res) => {
+      const data = blogCollection.find().limit(20);
+      const result = await data.toArray();
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
